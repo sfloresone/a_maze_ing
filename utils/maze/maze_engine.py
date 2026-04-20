@@ -70,5 +70,17 @@ class MazeGenerator:
         # si tiene las dimensiones suficientes, algo asi:
         # self._inject_42_pattern()
 
+
+    def make_imperfect(self, chance: float = 0.1) -> None:
+        """
+        Function that allows us to add more exits to the original maze (by knocking down walls).
+        """
+        for y in range(self.height - 1):
+            for x in range(self.width - 1):
+                if 
+
+    def _inject_42_pattern():
+        pass
+
     def get_grid(self) -> list[list[Cell]]:
         return self.grid
