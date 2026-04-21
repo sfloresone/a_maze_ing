@@ -2,6 +2,7 @@
 import sys
 from utils.parser.config_parser import MazeConfig
 from utils.maze.maze_engine import MazeGenerator
+from utils.maze.maze_visualizer import MazeVisualizer
 from test_file import print_pretty_maze
 
 
@@ -14,40 +15,33 @@ def print_console(grid) -> None:
 
 
 def main() -> None:
-
     if len(sys.argv) != 2:
         print("Use: python3 a_maze_ing.py config.txt")
         sys.exit(1)
 
-    print("Test function")
-    config_file: str = sys.argv[1]
+    config_file = sys.argv[1]
 
     try:
+        # 1. Cargar configuración
         config = MazeConfig(config_file)
-        print("Prueba de carga de configuracion")
-        print(f"{config.width}")
-        print(f"{config.height}")
-        print(f"{config.entry}")
-        print(f"{config.exit}")
-        print(f"{config.outputfile}")
-        print(f"{config.perfect}")
 
-        print("\nPrueba de visualizacion laberinto")
+        # 2. Generar el laberinto (Lógica)
         generator = MazeGenerator(config)
         generator.generate_maze()
 
-        grid = generator.get_grid()
-        print_console(grid)
-        print("----------------------------------\n")
-        print("----------------------------------")
-        print_pretty_maze(grid)
+        # 3. Traducir y Visualizar (Estética)
+        # Obtenemos la matriz de bloques (1s y 0s)
+        matrix = generator.get_display_matrix()
+        
+        # Creamos el visualizador y dibujamos
+        visualizer = MazeVisualizer(matrix)
+        visualizer.draw()
 
-    except (FileNotFoundError, ValueError) as e:
-        print(f"{e}")
-        sys.exit(1)
+        print(f"\nLaberinto de {config.width}x{config.height} generado.")
+        print(f"Perfecto: {config.perfect} | Entrada: {config.entry} | Salida: {config.exit}")
+
     except Exception as e:
-        print(f"Unexpected Error -> {e}")
-        sys.exit(1)
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":
