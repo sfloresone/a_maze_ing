@@ -22,39 +22,41 @@ def main() -> None:
         # 2. Generar el laberinto (Lógica)
         generator = MazeGenerator(config)
         generator.generate_maze()
-        grid = generator.get_grid()
-        solver = MazeSolver(grid, config.entry, config.exit)
+
+        # 3. Obtener las coordenadas del camino
+        solver = MazeSolver(generator.get_grid(), config.entry, config.exit)
         solved_path = solver.solve()
+        path_coords = solver.get_path_coords(solved_path)
 
-        export_maze(
-            config.outputfile,
-            grid,
-            config.entry,
-            config.exit,
-            solved_path
-        )
-
-        # 3. Traducir y Visualizar (Estética)
+        # 4. Traducir y Visualizar (Estética)
         # Obtenemos la matriz de bloques (1s y 0s)
         matrix = generator.get_display_matrix()
-
-        # Creamos el visualizador y dibujamos
         visualizer = MazeVisualizer(matrix)
+        visualizer.show_path = False
 
         while True:
-            visualizer.draw()
+            # Dibujar laberinto
+            # Pasamos path_coords siempre, el visualizador decide si pintarlas con show_path
+            visualizer.draw(path_coords)
             print("\n=== A-Maze-Ing ===")
             print("1. Re-generate a new maze")
-            print("2. Show/Hide path")
+            print(f"2. {'Hide' if visualizer.show_path else 'Show'} path")
             print("3. Change colors")
             print("4. Quit")
 
             choice = input("\nChoice? (1-4): ")
 
             if choice == "1":
-                # Aqui vendra backtracking recursivo
+                # IMPORTANTE: Al regenerar, hay que repetir todo el proceso lógico
                 gen = MazeGenerator(config)
                 gen.generate_maze()
+
+                # Actualizar solución
+                solver = MazeSolver(gen.get_grid(), config.entry, config.exit)
+                solved_path = solver.solve()
+                path_coords = solver.get_path_coords(solved_path)
+
+                # Actualizar dibujo
                 visualizer.update_data(gen.get_display_matrix())
 
             elif choice == "2":
@@ -66,12 +68,21 @@ def main() -> None:
                 visualizer.change_color(new_color)
 
             elif choice == "4":
+                # Exportamos antes de salir
+                export_maze(
+                    config.outputfile,
+                    generator.get_grid(),
+                    config.entry,
+                    config.exit,
+                    solved_path
+                )
+                print(f"Maze exported to {config.outputfile}. Goodbye!")
                 break
 
-        print(f"\nLaberinto de {config.width}x{config.height} generado.")
-        print(f"Perfecto: {config.perfect} "
-              f"| Entrada: {config.entry} |"
-              f" Salida: {config.exit}"
+        print(f"\Maze {config.width}x{config.height} generated.")
+        print(f"Perfect: {config.perfect} "
+              f"| Entry: {config.entry} |"
+              f" Exit: {config.exit}"
               )
 
     except Exception as e:

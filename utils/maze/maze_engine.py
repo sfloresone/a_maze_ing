@@ -1,8 +1,6 @@
-
 import random
 from utils.parser.config_parser import MazeConfig
 from utils.maze.cell import Cell
-
 
 class MazeGenerator:
     def __init__(self, config: MazeConfig) -> None:
@@ -21,16 +19,12 @@ class MazeGenerator:
         neighbors: list[tuple[str, Cell]] = []
         x, y = current.x, current.y
 
-        # North (y - 1)
         if y > 0 and not self.grid[y - 1][x].visited:
             neighbors.append(('N', self.grid[y - 1][x]))
-        # South (y + 1)
         if y < self.height - 1 and not self.grid[y + 1][x].visited:
             neighbors.append(('S', self.grid[y + 1][x]))
-        # East (x + 1)
         if x < self.width - 1 and not self.grid[y][x + 1].visited:
             neighbors.append(('E', self.grid[y][x + 1]))
-        # Weast (x - 1)
         if x > 0 and not self.grid[y][x - 1].visited:
             neighbors.append(('W', self.grid[y][x - 1]))
 
@@ -47,38 +41,26 @@ class MazeGenerator:
             current_cell = stack[-1]
             neighbors = self._get_unvisited(current_cell)
 
-            # Si hay vecinos por visitar
             if neighbors:
-                # Si hay vecinos elegimos uno al azar
                 direction, next_cell = random.choice(neighbors)
-                # Tiramos la pared
                 current_cell.remove_wall(next_cell, direction)
                 next_cell.visited = True
                 stack.append(next_cell)
             else:
-                # Si no hay vecinos, estamos en callejon sin salida
-                # Hacemos backtrack, es decir retrocedemos
                 stack.pop()
 
     def generate_maze(self) -> None:
+        # 1. Inyectamos el logo PRIMERO
+        self._inject_42_pattern()
+        
+        # 2. Generamos el laberinto alrededor
         self._gen_perfect_backtracker()
 
-        # self._make_imperfect
+        # 3. Hacemos imperfecto si es necesario
         if not self.perfect:
             self.make_imperfect(0.1)
 
-        # Aqui habría que hacer un algoritmo extra para romper algunas paredes
-        # if not self.perfect:
-        # self._make_imperfect
-        # Finalmente tendriamos que injectar "42" dentro de nuestro laberinto
-        # si tiene las dimensiones suficientes, algo asi:
-        # self._inject_42_pattern()
-
     def get_display_matrix(self) -> list[list]:
-        """
-        Convierte el grid de objetos Cell en una matriz de 1s, 0s, E y S
-        """
-        # Tamaño ampliado para que las paredes ocupen su propia celda
         disp_width = self.width * 2 + 1
         disp_height = self.height * 2 + 1
         matrix = [[1 for _ in range(disp_width)] for _ in range(disp_height)]
@@ -86,66 +68,92 @@ class MazeGenerator:
         for y in range(self.height):
             for x in range(self.width):
                 cell = self.grid[y][x]
-                # Coordenada en la matriz de dibujo
                 my_y = y * 2 + 1
                 my_x = x * 2 + 1
-                matrix[my_y][my_x] = 0
 
-                # Si no hay pared al sur, abrimos el bloque de abajo
-                if not cell.walls['S'] and y < self.height - 1:
-                    matrix[my_y + 1][my_x] = 0
+                # Lógica del Logo P
+                if getattr(cell, 'is_in_pattern', False):
+                    matrix[my_y][my_x] = 'P'
+                    # Conectar logo hacia el sur
+                    if y < self.height - 1 and getattr(self.grid[y+1][x], 'is_in_pattern', False):
+                        matrix[my_y + 1][my_x] = 'P'
+                    # Conectar logo hacia el este
+                    if x < self.width - 1 and getattr(self.grid[y][x+1], 'is_in_pattern', False):
+                        matrix[my_y][my_x + 1] = 'P'
+                else:
+                    if matrix[my_y][my_x] != 'P':
+                        matrix[my_y][my_x] = 0
 
-                # Si no hay pared este, abrimos el bloque de la derecha
-                if not cell.walls['E'] and x < self.width - 1:
-                    matrix[my_y][my_x + 1] = 0
+                # Lógica de paredes normales (solo si no somos logo)
+                if not getattr(cell, 'is_in_pattern', False):
+                    if not cell.walls['S'] and y < self.height - 1:
+                        if not getattr(self.grid[y+1][x], 'is_in_pattern', False):
+                            matrix[my_y + 1][my_x] = 0
 
-                # Colocamos entrada y salida en los bordes de la matriz
-                # Ajustamos las coordenadas de la config al sistema 2n+1
-            try:
-                e_y, e_x = self.entry[1] * 2 + 1, self.entry[0] * 2 + 1
-                s_y, s_x = self.exit[1] * 2 + 1, self.exit[0] * 2 + 1
+                    if not cell.walls['E'] and x < self.width - 1:
+                        if not getattr(self.grid[y][x+1], 'is_in_pattern', False):
+                            matrix[my_y][my_x + 1] = 0
 
-                matrix[e_y][e_x] = 'E'
-                matrix[s_y][s_x] = 'S'
-            except IndexError:
-                raise ValueError("Error: The entry or exit is out of bounds.")
-
+        # Colocar Entrada y Salida
+        try:
+            e_y, e_x = self.entry[1] * 2 + 1, self.entry[0] * 2 + 1
+            s_y, s_x = self.exit[1] * 2 + 1, self.exit[0] * 2 + 1
+            matrix[e_y][e_x] = 'E'
+            matrix[s_y][s_x] = 'S'
+        except IndexError:
+            pass
+            
         return matrix
+    
+    
+    def _inject_42_pattern(self) -> None:
+        """
+        Inyecta un '42' en el centro. Al marcar las celdas como 'visited', 
+        el algoritmo de generación no las pisará ni romperá sus paredes, 
+        creando un bloque macizo alrededor.
+        """
+        # Dimensión mínima para que el 42 quepa con algo de margen
+        if self.width < 11 or self.height < 9:
+            return  
+
+        # Patrón del '42' (5 celdas de alto x 7 de ancho)
+        # Coordenadas relativas (y, x)
+        pattern = [
+            (0,0), (0,4), (0,5), (0,6),
+            (1,0), (1,6),
+            (2,0), (2,1), (2,2), (2,4), (2,5), (2,6),
+            (3,2), (3,4),
+            (4,2),(4,4), (4,5), (4,6)
+        ]
+
+        # Calcular el centro
+        start_x = (self.width - 7) // 2
+        start_y = (self.height - 5) // 2
+
+        # Aplicar el patrón
+        for dy, dx in pattern:
+            cell = self.grid[start_y + dy][start_x + dx]
+            cell.visited = True
+            cell.is_in_pattern = True
 
     def make_imperfect(self, chance: float = 0.1) -> None:
-        """
-        Function that allows us to add more paths to the original maze
-        (by knocking down walls).
-
-        @Pablo: Esto tiene en cuenta que no se creen zonas de 3x3?
-        te lo comento porque en el subject indica que no puede area
-        de esas dimensiones - pagina 8, punto 4 de la seccion IV.4.
-
-        Y al ser aleatorio se 'podría' romper
-        """
         for y in range(self.height - 1):
             for x in range(self.width - 1):
                 current_cell = self.grid[y][x]
+                
+                # Evitar romper paredes que conecten con el logo 42
+                if getattr(current_cell, 'is_in_pattern', False):
+                    continue
 
-                # Intentar romper hacia el sur
                 if y < self.height - 1 and current_cell.walls['S']:
-                    if random.random() < chance:
-                        next_cell = self.grid[y + 1][x]
+                    next_cell = self.grid[y + 1][x]
+                    if not getattr(next_cell, 'is_in_pattern', False) and random.random() < chance:
                         current_cell.remove_wall(next_cell, 'S')
 
-                # Intentar romper hacia el este
                 if x < self.width - 1 and current_cell.walls['E']:
-                    if random.random() < chance:
-                        next_cell = self.grid[y][x + 1]
+                    next_cell = self.grid[y][x + 1]
+                    if not getattr(next_cell, 'is_in_pattern', False) and random.random() < chance:
                         current_cell.remove_wall(next_cell, 'E')
-
-    def _inject_42_pattern(self):
-        """
-        @Pablo: Además de dibujar el '42' cuando se cumplen unas dimensiones
-        tambien tienes que cerrar las paredes que envuelven al 42, si no la
-        solucion atraviesa el 42
-        """
-        pass
 
     def get_grid(self) -> list[list[Cell]]:
         return self.grid
