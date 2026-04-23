@@ -3,4 +3,4 @@ HEIGHT=6
 ENTRY=1,3
 EXIT=4,5
 OUTPUT_FILE=output_maze.txt
-PERFECT=False
+PERFECT=True

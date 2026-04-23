@@ -13,6 +13,7 @@ class Cell:
         }
         #  'Remember state' variable for BFS and Backtracking
         self.visited: bool = False
+        self.is_in_pattern: bool
 
     def to_hex(self) -> str:
         value: int = 0

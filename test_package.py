@@ -1,6 +1,8 @@
-from mazegen import MazeGenerator, MazeSolver, MazeVisualizer
+from src.mazegen import MazeGenerator, MazeSolver, MazeVisualizer
 
-laberinto = MazeGenerator(width=15, height=10, entry=(0, 0), exit_pos=(14, 9), perfect=True)
+laberinto = MazeGenerator(
+    width=15, height=10, entry=(0, 0), exit_pos=(14, 9), perfect=True
+)
 laberinto.generate_maze()
 
 solucion = MazeSolver(laberinto.get_grid(), (0, 0), (14, 9))
