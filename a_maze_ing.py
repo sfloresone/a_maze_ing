@@ -41,6 +41,13 @@ def main() -> None:
         visualizer.show_path = False
 
         while True:
+            export_maze(
+                config.outputfile,
+                generator.get_grid(),
+                config.entry,
+                config.exit,
+                solved_path
+            )
             # Dibujar laberinto
             # Pasamos path_coords siempre,
             # el visualizador decide si pintarlas con show_path
@@ -81,24 +88,8 @@ def main() -> None:
                 new_color = input(
                     "Color (red/green/blue/yellow/white): ").lower()
                 visualizer.change_color(new_color)
-
             elif choice == "4":
-                # Exportamos antes de salir
-                export_maze(
-                    config.outputfile,
-                    generator.get_grid(),
-                    config.entry,
-                    config.exit,
-                    solved_path
-                )
-                print(f"Maze exported to {config.outputfile}. Goodbye!")
                 break
-
-        print(f"\nMaze {config.width}x{config.height} generated.")
-        print(f"Perfect: {config.perfect} "
-              f"| Entry: {config.entry} |"
-              f" Exit: {config.exit}"
-              )
 
     except Exception as e:
         print(f"Error: {e}")

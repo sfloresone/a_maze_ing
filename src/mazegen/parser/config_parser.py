@@ -17,6 +17,9 @@ class MazeConfig:
         self._parse()
         self._validate()
 
+    """
+    @Sergio verificar todo el parseo (revisar chat de @Pablo)
+    """
     def _assign_value(self, key: str, value: str, line_num: int) -> None:
         value = value.strip('"\'')
 

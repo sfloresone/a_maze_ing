@@ -76,9 +76,14 @@ class MazeGenerator:
             self.make_imperfect(0.1)
 
     def get_display_matrix(self) -> list[list]:
+        """
+        @Pablo
+        """
         disp_width = self.width * 2 + 1
         disp_height = self.height * 2 + 1
-        matrix = [[1 for _ in range(disp_width)] for _ in range(disp_height)]
+        matrix: list[list[int | str]] = [
+            [1 for _ in range(disp_width)] for _ in range(disp_height)
+        ]
 
         for y in range(self.height):
             for x in range(self.width):
@@ -161,6 +166,12 @@ class MazeGenerator:
             cell.is_in_pattern = True
 
     def make_imperfect(self, chance: float = 0.1) -> None:
+        """
+        Takes the original grid and takes down random walls
+        respecting the 3x3 forbidden open area
+        Args:
+            chance:
+        """
         for y in range(self.height - 1):
             for x in range(self.width - 1):
                 current_cell = self.grid[y][x]
@@ -184,4 +195,7 @@ class MazeGenerator:
                         current_cell.remove_wall(next_cell, 'E')
 
     def get_grid(self) -> list[list[Cell]]:
+        """
+        Returns the full maze grid
+        """
         return self.grid
