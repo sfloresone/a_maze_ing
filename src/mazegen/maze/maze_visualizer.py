@@ -5,7 +5,7 @@ class MazeVisualizer:
     def __init__(self, maze_data: list[list]) -> None:
         self.maze = maze_data
         self.show_path = False
-        self.wall_color = "\033[0;32m"  # Verde por defecto
+        self.wall_color = "\033[0;32m"
         self.reset_color = "\033[0m"
         self.colors = {
             "red": "\033[0;31m",
@@ -17,26 +17,27 @@ class MazeVisualizer:
         }
 
     def update_data(self, new_maze_data: list[list]) -> None:
-        """Actualiza la matriz del laberinto"""
+        """Updates the maze matrix"""
         self.maze = new_maze_data
 
     def _get_wall_char(self, r, c) -> str:
-        """Determina el carácter GRUESO (Heavy) según los vecinos"""
+        """
+        Computes the thickness (Heavy) relative to his
+        neighbours
+        """
         rows = len(self.maze)
         cols = len(self.maze[0])
 
-        # Función auxiliar: Consideramos pared tanto al '1'
-        #  normal como a la 'P' del logo
         def is_wall(val):
             return val == 1 or val == 'P'
 
-        # Detectar vecinos que son pared o logo
+        # Detects neighbours that are walls or the logo
         up = r > 0 and is_wall(self.maze[r-1][c])
         down = r < rows - 1 and is_wall(self.maze[r+1][c])
         left = c > 0 and is_wall(self.maze[r][c-1])
         right = c < cols - 1 and is_wall(self.maze[r][c+1])
 
-        # Lógica de conexión con caracteres GRUESOS
+        # Thickness conection logic
         if up and down and left and right:
             return "╋━"
         if up and down and right:
@@ -71,29 +72,28 @@ class MazeVisualizer:
             line = ""
             for c, cell in enumerate(row):
 
-                # 1. PRIORIDAD MÁXIMA: Especiales (Entrada y Salida)
-                # Así nos aseguramos de que sus cuadrados de color
-                # nunca se borren
+                # 1. Maximun priority (Entry and Exit)
+                # To make sure that they never get deleted
                 if cell == 'E':
                     line += "\033[45m  \033[0m"
                 elif cell == 'S':
                     line += "\033[41m  \033[0m"
 
-                # 2. Camino de solución
+                # 2. Solution path
                 elif self.show_path and (r, c) in path_coords:
                     line += "\033[1;33m ●\033[0m"
 
-                # 3. Paredes NORMALES
+                # 3. Normal walls
                 elif cell == 1:
                     char = self._get_wall_char(r, c)
                     line += f"{self.wall_color}{char}{self.reset_color}"
 
-                # 4. Logo 42 (Paredes integradas pero con color distinto)
+                # 4. 42 logo
                 elif cell == 'P':
                     char = self._get_wall_char(r, c)
                     line += f"\033[1;36m{char}{self.reset_color}"
 
-                # 5. Pasillos
+                # 5. Corridors
                 else:
                     line += "  "
             print(line)

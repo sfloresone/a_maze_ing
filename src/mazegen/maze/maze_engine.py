@@ -65,13 +65,13 @@ class MazeGenerator:
         if self.seed is not None:
             random.seed(self.seed)
 
-        # 1. Inyectamos el logo PRIMERO
+        # 1. Put the logo first
         self._inject_42_pattern()
 
-        # 2. Generamos el laberinto alrededor
+        # 2. Generate the maze around it
         self._gen_perfect_backtracker()
 
-        # 3. Hacemos imperfecto si es necesario
+        # 3. If necessary, we make it imperfect
         if not self.perfect:
             self.make_imperfect(0.1)
 
@@ -122,7 +122,7 @@ class MazeGenerator:
                         ):
                             matrix[my_y][my_x + 1] = 0
 
-        # Colocar Entrada y Salida
+        # Put the entry and exit
         try:
             entry_cell = self.grid[self.entry[1]][self.entry[0]]
             exit_cell = self.grid[self.exit[1]][self.exit[0]]
@@ -148,15 +148,14 @@ class MazeGenerator:
         Inyecta un '42' en el centro. Al marcar las celdas como 'visited',
         el algoritmo de generación no las pisará ni romperá sus paredes,
         creando un bloque macizo alrededor.
-
-        !FALTA MOSTRAR UN MENSAJE DE ERROR EN CASO DE QUE NO CUMPLA DIMENSIONES
         """
-        # Dimensión mínima para que el 42 quepa con algo de margen
+        # Minimum width and height needed for the '42' logo
         if self.width < 11 or self.height < 9:
+            print("Not enough area for the '42' pattern!")
             return
 
-        # Patrón del '42' (5 celdas de alto x 7 de ancho)
-        # Coordenadas relativas (y, x)
+        # '42' pattern (5 heigth x 7 width)
+        # relative coordinates (y, x)
         pattern = [
             (0, 0), (0, 4), (0, 5), (0, 6),
             (1, 0), (1, 6),
@@ -165,11 +164,11 @@ class MazeGenerator:
             (4, 2), (4, 4), (4, 5), (4, 6)
         ]
 
-        # Calcular el centro
+        # Calculate center
         start_x = (self.width - 7) // 2
         start_y = (self.height - 5) // 2
 
-        # Aplicar el patrón
+        # Apply pattern
         for dy, dx in pattern:
             cell = self.grid[start_y + dy][start_x + dx]
             cell.visited = True
@@ -214,7 +213,7 @@ class MazeGenerator:
             for x in range(self.width - 1):
                 current_cell = self.grid[y][x]
 
-                # Evitar romper paredes que conecten con el logo 42
+                # Prevents not throwing walls next to the 42 logo
                 if getattr(current_cell, 'is_in_pattern', False):
                     continue
 
