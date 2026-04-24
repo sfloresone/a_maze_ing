@@ -15,10 +15,10 @@ def main() -> None:
     config_file = sys.argv[1]
 
     try:
-        # 1. Cargar configuración
+        # 1. Load config
         config = MazeConfig(config_file)
 
-        # 2. Generar el laberinto (Lógica)
+        # 2. Generate maze
         generator = MazeGenerator(
             width=config.width,
             height=config.height,
@@ -29,13 +29,12 @@ def main() -> None:
         )
         generator.generate_maze()
 
-        # 3. Obtener las coordenadas del camino
+        # 3. Get the path coordinates
         solver = MazeSolver(generator.get_grid(), config.entry, config.exit)
         solved_path = solver.solve()
         path_coords = solver.get_path_coords(solved_path)
 
-        # 4. Traducir y Visualizar (Estética)
-        # Obtenemos la matriz de bloques (1s y 0s)
+        # 4. Translate and Visualize
         matrix = generator.get_display_matrix()
         visualizer = MazeVisualizer(matrix)
         visualizer.show_path = False
@@ -48,9 +47,9 @@ def main() -> None:
                 config.exit,
                 solved_path
             )
-            # Dibujar laberinto
-            # Pasamos path_coords siempre,
-            # el visualizador decide si pintarlas con show_path
+            # Draw the maze
+            # Pass the path coordinates,
+            # The visualizer decides to draw it with 'show_path'
             visualizer.draw(path_coords)
             print("\n=== A-Maze-Ing ===")
             print("1. Re-generate a new maze")
@@ -61,8 +60,8 @@ def main() -> None:
             choice = input("\nChoice? (1-4): ")
 
             if choice == "1":
-                # IMPORTANTE: Al regenerar,
-                # hay que repetir todo el proceso lógico
+                # IMPORTANT: When regenerated,
+                # the whole logic process needs to be repeated
                 gen = MazeGenerator(
                     width=config.width,
                     height=config.height,
@@ -73,12 +72,12 @@ def main() -> None:
                 )
                 gen.generate_maze()
 
-                # Actualizar solución
+                # Updates solution path
                 solver = MazeSolver(gen.get_grid(), config.entry, config.exit)
                 solved_path = solver.solve()
                 path_coords = solver.get_path_coords(solved_path)
 
-                # Actualizar dibujo
+                # Updates the matrix
                 visualizer.update_data(gen.get_display_matrix())
 
             elif choice == "2":

@@ -108,16 +108,15 @@ class MazeSolver:
 
     def get_path_coords(self, solution_str: str) -> set[tuple[int, int]]:
         """
-        Convierte el string 'SSENE' en coordenadas (r, c) para el Visualizer
+        Converts the 'SSENE' string into (r, c) tuples for the Visualizer
         """
         coords = set()
         curr_x, curr_y = self.entry
 
-        # Añadir posición inicial (mapeada a 2n+1)
+        # Add initial position (map a 2n+1)
         coords.add((curr_y * 2 + 1, curr_x * 2 + 1))
 
         for move in solution_str:
-            # 1. Calculamos hacia dónde vamos en el grid de Cells
             if move == 'N':
                 curr_y -= 1
             elif move == 'S':
@@ -127,8 +126,6 @@ class MazeSolver:
             elif move == 'W':
                 curr_x -= 1
 
-            # 2. Mapeamos la Cell y el "pasillo"
-            #  intermedio a la matriz de dibujo
             draw_y, draw_x = curr_y * 2 + 1, curr_x * 2 + 1
 
             if move == 'N':

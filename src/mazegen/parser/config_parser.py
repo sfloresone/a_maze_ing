@@ -20,7 +20,7 @@ class MazeConfig:
         self._validate()
 
     """
-    @Sergio verificar todo el parseo (revisar chat de @Pablo)
+    Tries to assign the VALID keys
     """
     def _assign_value(self, key: str, value: str, line_num: int) -> None:
 
@@ -122,8 +122,8 @@ class MazeConfig:
 
         if self.width <= 0 or self.height <= 0:
             raise ValueError("Error: WIDTH and HEIGHT must be (> 0)")
-        # if not self.outputfile:
-        #    raise ValueError("Error: Missing OUTPUT_FILE specificator")
+        if not self.outputfile:
+            raise ValueError("Error: Missing OUTPUT_FILE specificator")
         if self.entry == self.exit:
             raise ValueError("Error: Both entry and exit can't be equal")
         valid_x = 0 <= self.entry[0] < self.width
